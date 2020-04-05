@@ -292,7 +292,7 @@ class Net(nn.Module):
         Ag1 = F.dropout(self.batch_norm1(F.relu(self.global1(x))), p=self.dropout)
         Ag2 = F.dropout(self.batch_norm2(F.relu(self.global2(torch.cat([Ag1, x], dim=1)))), p=self.dropout)
         Ag3 = F.dropout(self.batch_norm3(F.relu(self.global3(torch.cat([Ag2, x], dim=1)))), p=self.dropout)
-        Ag4 = F.dropout(self.batch_norm4(F.relu(self.global4(torch.cat([Ag3, x], dim=1)))), p=self.dropout)
+        Ag4 = F.dropout(self.baCNF_norm4(F.relu(self.global4(torch.cat([Ag3, x], dim=1)))), p=self.dropout)
         Pg = torch.sigmoid(self.globalOut(Ag4))
         
         return Pg
@@ -437,24 +437,26 @@ def get_dropout_list(low, high, num):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--inh', default=False)
+    parser.add_argument('--inhibitors', default=False)
+    parser.add_argument('--similarity', default=True)
     args = parser.parse_args()
 
-    inh = "_inh" if args.inh else ""
+    sim = "_sim" if args.similarity else ""
+    inh = "_inh" if args.inhibitors else ""
 
     # get data
     print("Getting data...")
-    data = pickle_load("../data/HMLCF_data/data.pkl")
-    Pl1  = pickle_load("../data/HMLCF_data/Pl1.pkl")
-    Pl2  = pickle_load("../data/HMLCF_data/Pl2.pkl")
-    Pl3  = pickle_load("../data/HMLCF_data/Pl3.pkl")
-    Pl4  = pickle_load("../data/HMLCF_data/Pl4.pkl")
-    Pg   = pickle_load("../data/HMLCF_data/Pg.pkl")
-    Pl1_weights = pickle_load("../data/HMLCF_data/Pl1_sim_bal_weights.pkl" % inh)
-    Pl2_weights = pickle_load("../data/HMLCF_data/Pl2_sim_bal_weights.pkl" % inh)
-    Pl3_weights = pickle_load("../data/HMLCF_data/Pl3_sim_bal_weights.pkl" % inh)
-    Pl4_weights = pickle_load("../data/HMLCF_data/Pl4_sim_bal_weights.pkl" % inh)
-    Pg_weights  = pickle_load("../data/HMLCF_data/Pg_sim_bal_weights.pkl" % inh)
+    data = pickle_load("../data/HMCNF_data/data.pkl")
+    Pl1  = pickle_load("../data/HMCNF_data/Pl1.pkl")
+    Pl2  = pickle_load("../data/HMCNF_data/Pl2.pkl")
+    Pl3  = pickle_load("../data/HMCNF_data/Pl3.pkl")
+    Pl4  = pickle_load("../data/HMCNF_data/Pl4.pkl")
+    Pg   = pickle_load("../data/HMCNF_data/Pg.pkl")
+    Pl1_weights = pickle_load("../data/HMCNF_data/Pl1%s_bal_weights%s.pkl" % (sim, inh))
+    Pl2_weights = pickle_load("../data/HMCNF_data/Pl2%s_bal_weights%s.pkl" % (sim, inh))
+    Pl3_weights = pickle_load("../data/HMCNF_data/Pl3%s_bal_weights%s.pkl" % (sim, inh))
+    Pl4_weights = pickle_load("../data/HMCNF_data/Pl4%s_bal_weights%s.pkl" % (sim, inh))
+    Pg_weights  = pickle_load("../data/HMCNF_data/Pg%s_bal_weights%s.pkl" % (sim, inh))
     print("Successfully gotten data.")
 
     # partition datainto training and testing
