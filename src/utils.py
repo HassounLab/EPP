@@ -28,6 +28,17 @@ def get_data(filepath):
     handle.close()
     return data
 
+def write_data(self, data, filepath):
+    handle = open(filepath, "w+")
+
+    for enzyme in data:
+        handle.write(enzyme)
+        handle.write('\t')
+        handle.write(self.concatenate(data[enzyme], '$'))
+        handle.write('\n')
+
+    handle.close()
+
 def polyfit(x, y, degree):
     results = {"Coefficients": [], "R-squared": 0}
 
