@@ -84,12 +84,12 @@ if __name__ == "__main__":
     r = args.ratio
 
     print("Doing training")
-    dset = dataset("../data/pos_dict_train.pkl" % (inh), "../data/unl_dict_train%s_r%s.pkl" % (inh, r))
+    dset = dataset("../data/pos_dict_train%s.pkl" % (inh), "../data/unl_dict_train%s_r%s.pkl" % (inh, r))
     data_filepath = "../data/tree_data/tree_and_flat_data%s_train_r%s.pkl" % (inh, r)
     dset.prepare_data(filepath=data_filepath)
 
     print("Doing testing")
-    dset_test = dataset("../data/pos_dict_test.pkl" % (inh), "../data/unl_dict_test%s_r%s.pkl" % (inh, r))
+    dset_test = dataset("../data/pos_dict_test%s.pkl" % (inh), "../data/unl_dict_test%s_r%s.pkl" % (inh, r))
     data_filepath_test = "../data/tree_data/tree_and_flat_data%s_test_r%s.pkl" % (inh, r)
     dset_test.prepare_data(filepath=data_filepath_test)
     print("Done")
