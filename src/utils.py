@@ -6,6 +6,7 @@ import pickle
 import numpy as np
 from numpy import interp
 
+
 def pickle_load(filepath):
     f = open(filepath, "rb")
     data = pickle.load(f)
@@ -38,6 +39,19 @@ def write_data(self, data, filepath):
         handle.write('\n')
 
     handle.close()
+
+def bit_strings_to_arrays(bit_strings):
+    bit_arrays = []
+    for bit_string in bit_strings:
+        bit_arrays.append(np.array([int(i) for i in bit_string]))
+    return np.array(bit_arrays)
+
+def remove_duplicates(alist):
+    newlist = []
+    for elem in alist:
+        if elem not in newlist:
+            newlist.append(elem)
+    return newlist
 
 def polyfit(x, y, degree):
     results = {"Coefficients": [], "R-squared": 0}
