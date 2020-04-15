@@ -30,8 +30,6 @@ class TreeAndFlatModels(object):
         self.model_tree = {}
 
     def create_tree(self):        
-        null_nodes = 0
-        valid_nodes = 0
         for ec in self.enzymes_tree:
             print("Doing EC %s" % ec)
             self.model_tree[ec] = {}
@@ -41,20 +39,9 @@ class TreeAndFlatModels(object):
                 x_NF_te, y_N_te, num_pos_te, sample_weights_bal_te, sample_weights_sim_te, inh_test_te = self.test_data[query_enzyme]
             else:
                 self.model_tree[ec]["Tree"] = None
-                null_nodes += 1
                 continue
             
             self.model_tree[ec]["# Positive Examples"] = num_pos
-            
-            if num_pos < self.min_positive_examples:
-                self.model_tree[ec]["Tree"] = None
-                null_nodes += 1
-                continue
-            valid_nodes += 1
-            
-            if inh_test is not None:
-                self.model_tree[ec]["Inh Test"] = inh_test 
-
             self.model_tree[ec]["X Test"] = x_NF_te
             self.model_tree[ec]["Y Test"] = y_N_te
             self.model_tree[ec]["W bal Test"] = sample_weights_bal_te
@@ -77,19 +64,9 @@ class TreeAndFlatModels(object):
                     x_NF_te, y_N_te, num_pos_te, sample_weights_bal_te, sample_weights_sim_te, inh_test_te = self.test_data[query_enzyme]
                 else:
                     self.model_tree[ec][x]["Tree"] = None
-                    null_nodes += 1
                     continue
 
                 self.model_tree[ec][x]["# Positive Examples"] = num_pos
-
-                if num_pos < self.min_positive_examples:
-                    self.model_tree[ec][x]["Tree"] = None
-                    null_nodes += 1
-                    continue
-                valid_nodes += 1
-
-                if inh_test is not None:
-                    self.model_tree[ec][x]["Inh Test"] = inh_test 
                 
                 self.model_tree[ec][x]["X Test"] = x_NF_te
                 self.model_tree[ec][x]["Y Test"] = y_N_te
@@ -114,18 +91,8 @@ class TreeAndFlatModels(object):
                         x_NF_te, y_N_te, num_pos_te, sample_weights_bal_te, sample_weights_sim_te, inh_test_te = self.test_data[query_enzyme]
                     else:
                         self.model_tree[ec][x][y]["Tree"] = None
-                        null_nodes += 1
                         continue
                     self.model_tree[ec][x][y]["# Positive Examples"] = num_pos
-                    
-                    if num_pos < self.min_positive_examples:
-                        self.model_tree[ec][x][y]["Tree"] = None
-                        null_nodes += 1
-                        continue
-                    valid_nodes += 1
-                    
-                    if inh_test is not None:
-                        self.model_tree[ec][x][y]["Inh Test"] = inh_test 
                     
                     self.model_tree[ec][x][y]["X Test"] = x_NF_te
                     self.model_tree[ec][x][y]["Y Test"] = y_N_te 
@@ -151,19 +118,9 @@ class TreeAndFlatModels(object):
                             x_NF_te, y_N_te, num_pos_te, sample_weights_bal_te, sample_weights_sim_te, inh_test_te = self.test_data[query_enzyme]
                         else:
                             self.model_tree[ec][x][y][z]["Tree"] = None
-                            null_nodes += 1
                             continue
 
                         self.model_tree[ec][x][y][z]["# Positive Examples"] = num_pos
-
-                        if num_pos < self.min_positive_examples:
-                            self.model_tree[ec][x][y][z]["Tree"] = None
-                            null_nodes += 1
-                            continue
-                        valid_nodes += 1
-                        
-                        if inh_test is not None:
-                            self.model_tree[ec][x][y][z]["Inh Test"] = inh_test
                         
                         self.model_tree[ec][x][y][z]["X Test"] = x_NF_te
                         self.model_tree[ec][x][y][z]["Y Test"] = y_N_te
