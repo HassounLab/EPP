@@ -19,14 +19,11 @@ class TreeAndFlatModels(object):
                    test_filepath,
                    rep="maccs",
                    min_positive_examples=10):
-        '''
-        Builds instance of dict containing all estimators.
-        '''
         self.train_filepath = train_filepath
         self.test_filepath = test_filepath
         self.data_ready = pickle_load(train_filepath)
         self.test_data = pickle_load(test_filepath)
-        print("done loading data")
+        print("Done loading data")
         self.rep = rep
         self.min_positive_examples = min_positive_examples
         self.num_folds = num_folds
@@ -71,14 +68,6 @@ class TreeAndFlatModels(object):
             first_est = first_model_data["best_estimator"]
             self.model_tree[ec]["Flat"] = first_est
             
-            # first_model_data = self.select_model("RFClas", x_NF, y_N, sample_weights=sample_weights_bal, proba=True)
-            # first_est = first_model_data["best_estimator"]
-            # self.model_tree[ec]["Flat No Weight"] = first_est           
-        
-            # first_model_data = self.select_model("RFClas", x_NF, y_N, sample_weights=sample_weights_bal, proba=True)
-            # first_est = first_model_data["best_estimator"]
-            # self.model_tree[ec]["Tree No Weight"] = first_est
-            
             for x in self.enzymes_tree[ec]:
                 print("\tDoing EC %s.%s" % (ec, x))
                 self.model_tree[ec][x] = {}
@@ -116,15 +105,6 @@ class TreeAndFlatModels(object):
                 second_est = second_model_data["best_estimator"]
                 self.model_tree[ec][x]["Flat"] = second_est
 
-                # second_model_data = self.select_model("RFClas", x_NF, y_N, sample_weights=sample_weights_bal, proba=True)
-                # second_est = second_model_data["best_estimator"]
-                # self.model_tree[ec][x]["Flat No Weight"] = second_est
-
-                # yhat_train_first = self.model_tree[ec]["Tree No Weight"].predict_proba(x_NF)[:,1]
-                # second_model_data = self.select_model("RFRegr", x_NF, y_N, y_prev=yhat_train_first, sample_weights=sample_weights_bal)
-                # second_est = second_model_data["best_estimator"]
-                # self.model_tree[ec][x]["Tree No Weight"] = second_est
-
                 for y in self.enzymes_tree[ec][x]:
                     print("\t\tDoing EC %s.%s.%s" % (ec, x, y))
                     self.model_tree[ec][x][y] = {}
@@ -161,16 +141,6 @@ class TreeAndFlatModels(object):
                     third_model_data = self.select_model("RFClas", x_NF, y_N, sample_weights=sample_weights_sim, proba=True)
                     third_est = third_model_data["best_estimator"]
                     self.model_tree[ec][x][y]["Flat"] = third_est
-
-                    # third_model_data = self.select_model("RFClas", x_NF, y_N, sample_weights=sample_weights_bal, proba=True)
-                    # third_est = third_model_data["best_estimator"]
-                    # self.model_tree[ec][x][y]["Flat No Weight"] = third_est                      
-
-                    # yhat_train_first = self.model_tree[ec]["Tree No Weight"].predict_proba(x_NF)[:,1]
-                    # yhat_train_second = self.model_tree[ec][x]["Tree No Weight"].predict(x_NF) + yhat_train_first
-                    # third_model_data = self.select_model("RFRegr", x_NF, y_N, y_prev=yhat_train_second, sample_weights=sample_weights_bal)
-                    # third_est = third_model_data["best_estimator"]
-                    # self.model_tree[ec][x][y]["Tree No Weight"] = third_est
                     
                     for z in self.enzymes_tree[ec][x][y]:
                         print("\t\t\tDoing EC %s.%s.%s.%s" % (ec, x, y, z))
@@ -185,7 +155,6 @@ class TreeAndFlatModels(object):
                             continue
 
                         self.model_tree[ec][x][y][z]["# Positive Examples"] = num_pos
-                        print(num_pos)
 
                         if num_pos < self.min_positive_examples:
                             self.model_tree[ec][x][y][z]["Tree"] = None
@@ -212,65 +181,6 @@ class TreeAndFlatModels(object):
                         fourth_est = fourth_model_data["best_estimator"]
                         self.model_tree[ec][x][y][z]["Flat"] = fourth_est
 
-                        # fourth_model_data = self.select_model("RFClas", x_NF, y_N, sample_weights=sample_weights_bal, proba=True)
-                        # fourth_est = fourth_model_data["best_estimator"]
-                        # self.model_tree[ec][x][y][z]["Flat No Weight"] = fourth_est
-
-                        # yhat_train_first = self.model_tree[ec]["Tree No Weight"].predict_proba(x_NF)[:,1]
-                        # yhat_train_second = self.model_tree[ec][x]["Tree No Weight"].predict(x_NF) + yhat_train_first
-                        # yhat_train_third = self.model_tree[ec][x][y]["Tree No Weight"].predict(x_NF) + yhat_train_second
-                        # fourth_model_data = self.select_model("RFRegr", x_NF, y_N, y_prev=yhat_train_third, sample_weights=sample_weights_bal)
-                        # fourth_est = fourth_model_data["best_estimator"]
-                        # self.model_tree[ec][x][y][z]["Tree No Weight"] = fourth_est
-                            
-        print("%d Valid Nodes" % valid_nodes)
-        print("%d Null Nodes" % null_nodes)
-        
-    def prepare_folds(self, x_NF, y_N, sample_weight, has_inh):
-        x_pos_NF = x_NF[y_N == 1.0]
-        y_pos_N = y_N[y_N == 1.0]
-        sample_weight_pos = sample_weight[y_N == 1.0]
-        
-        x_neg_NF = x_NF[y_N == 0.0]
-        y_neg_N = y_N[y_N == 0.0]
-        sample_weight_neg = sample_weight[y_N == 0.0]
-        
-        if has_inh:
-            x_inh_NF = x_NF[y_N == 10.0]
-            y_inh_N = y_N[y_N == 10.0]
-            sample_weight_inh = sample_weight[y_N == 10.0]
-        
-        x_tr_NF_list_pos, y_tr_N_list_pos, w_tr_N_list_pos, x_va_NF_list_pos, y_va_N_list_pos, w_va_N_list_pos = self.prepare_singleclass_folds(x_pos_NF, y_pos_N, sample_weight_pos, inh=False)
-        
-        x_tr_NF_list_neg, y_tr_N_list_neg, w_tr_N_list_neg, x_va_NF_list_neg, y_va_N_list_neg, w_va_N_list_neg = self.prepare_singleclass_folds(x_neg_NF, y_neg_N, sample_weight_neg, inh=False)
-        
-        if has_inh:
-            x_tr_NF_list_inh, y_tr_N_list_inh, w_tr_N_list_inh, x_va_NF_list_inh, y_va_N_list_inh, w_va_N_list_inh = self.prepare_singleclass_folds(x_inh_NF, y_inh_N, sample_weight_inh, inh=True)
-        
-        x_tr_NF_list = []
-        y_tr_N_list = []
-        w_tr_N_list = []
-        x_va_NF_list = []
-        y_va_N_list = []
-        w_va_N_list = []
-        for i in range(self.num_folds):
-            if has_inh:
-                x_tr_NF_list.append(np.vstack((x_tr_NF_list_pos[i], x_tr_NF_list_neg[i], x_tr_NF_list_inh[i])))
-                y_tr_N_list.append(np.hstack((y_tr_N_list_pos[i], y_tr_N_list_neg[i], y_tr_N_list_inh[i])))
-                w_tr_N_list.append(np.hstack((w_tr_N_list_pos[i], w_tr_N_list_neg[i], w_tr_N_list_inh[i])))
-                x_va_NF_list.append(np.vstack((x_va_NF_list_pos[i], x_va_NF_list_neg[i], x_va_NF_list_inh[i])))
-                y_va_N_list.append(np.hstack((y_va_N_list_pos[i], y_va_N_list_neg[i], y_va_N_list_inh[i])))
-                w_va_N_list.append(np.hstack((w_va_N_list_pos[i], w_va_N_list_neg[i], w_va_N_list_inh[i])))
-            else:
-                x_tr_NF_list.append(np.vstack((x_tr_NF_list_pos[i], x_tr_NF_list_neg[i])))
-                y_tr_N_list.append(np.hstack((y_tr_N_list_pos[i], y_tr_N_list_neg[i])))
-                w_tr_N_list.append(np.hstack((w_tr_N_list_pos[i], w_tr_N_list_neg[i])))
-                x_va_NF_list.append(np.vstack((x_va_NF_list_pos[i], x_va_NF_list_neg[i])))
-                y_va_N_list.append(np.hstack((y_va_N_list_pos[i], y_va_N_list_neg[i])))
-                w_va_N_list.append(np.hstack((w_va_N_list_pos[i], w_va_N_list_neg[i])))
-       
-        return x_tr_NF_list, y_tr_N_list, w_tr_N_list, x_va_NF_list, y_va_N_list, w_va_N_list
-            
     
     def select_model(self, estimator, x_NF, y_N, y_prev=0, sample_weights=None, proba=False):
         estimator_names = ["LR", "Ridge", "Lasso", "RFClas", "RFRegr", "SVM"]
