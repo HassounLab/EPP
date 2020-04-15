@@ -1,8 +1,6 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import sklearn
-import sklearn.preprocessing
 import sklearn.metrics
 import matplotlib.pyplot as plt
 import torch
@@ -10,15 +8,18 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.data
 import argparse
+import os
 
 from utils import pickle_load, pickle_dump, get_data, polyfit
+
+TEST_RATIO = 0.20
 
 ########## DATA PREPARATION #################
 
 def partition_data(data, Pl1, Pl2, Pl3, Pl4, Pg, Pl1_weights, Pl2_weights, Pl3_weights, Pl4_weights, Pg_weights):
     indexes = pickle_load("HMLCF_data/indexes_for_splitting")
 
-    cutoff = int(8295*0.20)
+    cutoff = int(data.shape[0]*TEST_RATIO)
 
     train_i = indexes[cutoff:]
     test_i = indexes[:cutoff]
@@ -108,7 +109,7 @@ def partition_data(data, Pl1, Pl2, Pl3, Pl4, Pg, Pl1_weights, Pl2_weights, Pl3_w
 
 def get_training_data_only(data, Pl1, Pl2, Pl3, Pl4, Pg, Pl1_weights, Pl2_weights, Pl3_weights, Pl4_weights, Pg_weights):
     indexes = pickle_load("HMLCF_data/indexes_for_splitting")
-    cutoff = int(8295*0.20)
+    cutoff = int(data.shape[0]*TEST_RATIO)
     train_i = indexes[cutoff:]
 
     return data[train_i], Pl1[train_i], Pl2[train_i], Pl3[train_i], Pl4[train_i], Pg[train_i], Pl1_weights[train_i], Pl2_weights[train_i], Pl3_weights[train_i], Pl4_weights[train_i], Pg_weights[train_i]
@@ -465,12 +466,14 @@ def get_dropout_list(low, high, num):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--inhibitors', default=False)
-    parser.add_argument('--similarity', default=True)
+    parser.add_argument('--inhibitors', default=False, dtype=bool)
+    parser.add_argument('--similarity', default=True, dtype=bool)
+    parser.add_argument('--output_folder', default='./')
     args = parser.parse_args()
 
     sim = "_sim" if args.similarity else ""
     inh = "_inh" if args.inhibitors else ""
+    output_folder = args.output_folder
 
     # get data
     print("Getting data...")
@@ -577,33 +580,7 @@ if __name__ == '__main__':
         results_list.append(results)
         targets_list.append(target_results)
 
-    torch.save(model, "models/HMLCF_BEST_balancing_weights_biased_inh_epoch_%d.pt" % (epoch))
-
-
-    # plot loss and save
-    t_train = []
-    for loss_trace in traces_train:
-        t_train += loss_trace
-
-    t_test = []
-    for loss_trace in traces_test:
-        t_test += loss_trace
-        
-    plt.figure(figsize = (17, 6))
-    x = np.linspace(0, len(t_train)-1, len(t_train))
-    plt.plot(x, t_train, label="Train")
-    plt.xlabel("Batch Iteration")
-    plt.ylabel("Loss")
-    plt.legend()
-    plt.savefig("HMLCF_results/loss_train_balancing_weights_biased_inh_best_drop%.2f_layer%d.pdf" % (best_dropout, best_layer))
-
-    plt.figure(figsize = (17, 6))
-    x = np.linspace(0, len(t_test)-1, len(t_test))
-    plt.plot(x, t_test, label="Test")
-    plt.xlabel("Batch Iteration")
-    plt.ylabel("Loss")
-    plt.legend()
-    plt.savefig("HMLCF_results/loss_test_balancing_weights_biased_inh_best_drop%.2f_layer%d.pdf" % (best_dropout, best_layer))
+    torch.save(model, "HMLCF%s_epoch_%d.pt" % (sim, inh, epoch))
 
     # plot ap and auroc
     aurocs = []
@@ -630,19 +607,19 @@ if __name__ == '__main__':
     plt.figure(figsize = (10, 7))
     epochs = np.linspace(1, num_epochs + 1, num_epochs)
     plt.plot(epochs, aurocs, label="AUROCS, final: %.3f +/- %.3f" % (aurocs[-1], std_aurocs[-1]))
-    plt.plot(epochs, aps, label="APS, final: %.3f +/- %.3f, at validation: %.3f" % (aps[-1], std_aps[-1], best_ap))
+    plt.plot(epochs, aps, label="APS, final: %.3f +/- %.3f" % (aps[-1], std_aps[-1]))
     plt.plot(epochs, R_precs, label="R-PRECS, final: %.3f +/- %.3f" % (R_precs[-1], std_R_precs[-1]))
-    plt.fill_between(epochs, np.array(aps) + np.array(std_aps), np.array(aps) - np.array(std_aps), alpha=.2, color="orange")#, label="mean std: %.3f" % (np.mean(std_aps)))
-    plt.fill_between(epochs, np.array(aurocs) + np.array(std_aurocs), np.array(aurocs) - np.array(std_aurocs), alpha=.2, color="blue")#, label="mean std: %.3f" % (np.mean(std_aurocs)))
-    plt.fill_between(epochs, np.array(R_precs) + np.array(std_R_precs), np.array(R_precs) - np.array(std_R_precs), alpha=.2, color="green")#, label="mean std: %.3f" % (np.mean(std_R_precs)))
-    plt.title("Results at Testing across Epochs, Similarity-Weighted, Dropout %.2f." % (best_dropout))
+    plt.fill_between(epochs, np.array(aps) + np.array(std_aps), np.array(aps) - np.array(std_aps), alpha=.2, color="orange")
+    plt.fill_between(epochs, np.array(aurocs) + np.array(std_aurocs), np.array(aurocs) - np.array(std_aurocs), alpha=.2, color="blue")
+    plt.fill_between(epochs, np.array(R_precs) + np.array(std_R_precs), np.array(R_precs) - np.array(std_R_precs), alpha=.2, color="green")
+    plt.title("HMCNF, Results at Testing across Epochs%s%s." % (", Similarity-Weighted" if args.similarity else "", ", Inhibitors" if args.inhibitors else ""))
     plt.xlabel("Epochs")
     plt.grid()
     plt.legend()
-    plt.savefig("HMLCF_results/ap_and_auroc_train_balancing_weights_biased_inh_best_drop%.2f_layer%d.pdf" % (best_dropout, best_layer))
+    plt.savefig(os.path.join(output_folder, "HMCNF_metrics_by_epoch%s%s_best_drop%.2f_layer%d.pdf" % (sim, inh, best_dropout, best_layer)))
 
-    pickle_dump(rocs_list, "HMLCF_results/rocs_list_balancing_weights_biased_inh_best_drop%.2f._layer%dpkl" % (best_dropout, best_layer))
-    pickle_dump(PRs_list, "HMLCF_results/PRs_list_balancing_weights_biased_inh_best_drop%.2f_layer%d.pkl" % (best_dropout, best_layer))
-    pickle_dump(R_precs_list, "HMLCF_results/R_precs_list_balancing_weights_biased_inh_best_drop%.2f_layer%d.pkl" % (best_dropout, best_layer))
-    pickle_dump(results_list, "HMLCF_results/results_list_balancing_weights_biased_inh_best_drop%.2f_layer%d.pkl" % (best_dropout, best_layer))
-    pickle_dump(targets_list, "HMLCF_results/targets_list_balancing_weights_biased_inh_best_drop%.2f_layer%d.pkl" % (best_dropout, best_layer))
+    pickle_dump(rocs_list, os.path.join(output_folder, "HMCNF_rocs_list%s%s_best_drop%.2f._layer%dpkl" % (sim, inh, best_dropout, best_layer)))
+    pickle_dump(PRs_list, os.path.join(output_folder, "HMCNF_PRs_list%s%s_best_drop%.2f_layer%d.pkl" % (sim, inh, best_dropout, best_layer)))
+    pickle_dump(R_precs_list, os.path.join(output_folder, "HMCNF_R_precs_list%s%s_best_drop%.2f_layer%d.pkl" % (sim, inh, best_dropout, best_layer)))
+    pickle_dump(results_list, os.path.join(output_folder, "HMCNF_results_list%s%s_best_drop%.2f_layer%d.pkl" % (sim, inh, best_dropout, best_layer)))
+    pickle_dump(targets_list, os.path.join(output_folder, "HMCNF_targets_list%s%s_best_drop%.2f_layer%d.pkl" % (sim, inh, best_dropout, best_layer)))
