@@ -1,5 +1,6 @@
 
 import numpy as np
+from numpy import interp
 import matplotlib.pyplot as plt
 import sklearn.metrics
 import matplotlib.pyplot as plt
@@ -13,11 +14,16 @@ import os
 from utils import pickle_load, pickle_dump, get_data, polyfit
 
 TEST_RATIO = 0.20
+EC = 1007
+CLASS = 6
+SUBCLASS = 50
+SUBSUBCLASS = 148
+ALL_LEVELS = EC + CLASS + SUBCLASS + SUBSUBCLASS
 
 ########## DATA PREPARATION #################
 
 def partition_data(data, Pl1, Pl2, Pl3, Pl4, Pg, Pl1_weights, Pl2_weights, Pl3_weights, Pl4_weights, Pg_weights):
-    indexes = pickle_load("HMLCF_data/indexes_for_splitting")
+    indexes = pickle_load("../data/HMCNF_data/indexes_for_splitting.pkl")
 
     cutoff = int(data.shape[0]*TEST_RATIO)
 
@@ -108,7 +114,7 @@ def partition_data(data, Pl1, Pl2, Pl3, Pl4, Pg, Pl1_weights, Pl2_weights, Pl3_w
     return partition
 
 def get_training_data_only(data, Pl1, Pl2, Pl3, Pl4, Pg, Pl1_weights, Pl2_weights, Pl3_weights, Pl4_weights, Pg_weights):
-    indexes = pickle_load("HMLCF_data/indexes_for_splitting")
+    indexes = pickle_load("../data/HMCNF_data/indexes_for_splitting.pkl")
     cutoff = int(data.shape[0]*TEST_RATIO)
     train_i = indexes[cutoff:]
 
@@ -116,7 +122,6 @@ def get_training_data_only(data, Pl1, Pl2, Pl3, Pl4, Pg, Pl1_weights, Pl2_weight
 
 def partition_data_cv(data, Pl1, Pl2, Pl3, Pl4, Pg, Pl1_weights, Pl2_weights, Pl3_weights, Pl4_weights, Pg_weights, num_folds):
     data_size = data.shape[0]
-    print(data_size)
 
     indexes = np.linspace(0, data_size-1, data_size, dtype=int)
     np.random.shuffle(indexes)
@@ -264,7 +269,8 @@ class Dataset(torch.utils.data.Dataset):
 
 ########## MODEL CLASS AND FUNCTIONS ###############
 
-x_size = 167
+# Number of dimensions in data
+X_SIZE = 167
 
 class Net(nn.Module):
 
@@ -275,17 +281,17 @@ class Net(nn.Module):
         self.Cl2 = Cl2
         self.Cl3 = Cl3
         self.Cl4 = Cl4
-        self.reduced = reduced
         self.dropout = dropout
         self.h_size = h_size
+        self.x_size = X_SIZE
         
-        self.global1 = nn.Linear(x_size, h_size)
+        self.global1 = nn.Linear(self.x_size, h_size)
         self.batch_norm1 = nn.BatchNorm1d(h_size)
-        self.global2 = nn.Linear(h_size + x_size, h_size)
+        self.global2 = nn.Linear(h_size + self.x_size, h_size)
         self.batch_norm2 = nn.BatchNorm1d(h_size)
-        self.global3 = nn.Linear(h_size + x_size, h_size)
+        self.global3 = nn.Linear(h_size + self.x_size, h_size)
         self.batch_norm3 = nn.BatchNorm1d(h_size)
-        self.global4 = nn.Linear(h_size + x_size, h_size)
+        self.global4 = nn.Linear(h_size + self.x_size, h_size)
         self.batch_norm4 = nn.BatchNorm1d(h_size)
         self.globalOut = nn.Linear(h_size, self.C)
 
@@ -293,7 +299,7 @@ class Net(nn.Module):
         Ag1 = F.dropout(self.batch_norm1(F.relu(self.global1(x))), p=self.dropout)
         Ag2 = F.dropout(self.batch_norm2(F.relu(self.global2(torch.cat([Ag1, x], dim=1)))), p=self.dropout)
         Ag3 = F.dropout(self.batch_norm3(F.relu(self.global3(torch.cat([Ag2, x], dim=1)))), p=self.dropout)
-        Ag4 = F.dropout(self.baCNF_norm4(F.relu(self.global4(torch.cat([Ag3, x], dim=1)))), p=self.dropout)
+        Ag4 = F.dropout(self.batch_norm4(F.relu(self.global4(torch.cat([Ag3, x], dim=1)))), p=self.dropout)
         Pg = torch.sigmoid(self.globalOut(Ag4))
         
         return Pg
@@ -346,13 +352,13 @@ def compute_results(predictions, targets, weights):
     results = {}
     target_results = {}
     target_weights = {}
-    for i in range(1007):
+    for i in range(EC):
         results[i] = []
         target_results[i] = []
         target_weights[i] = []
 
     for j, pred in enumerate(predictions):
-        for i in range(1007):
+        for i in range(EC):
             results[i].append(float(pred[i]))
             target_results[i].append(float(targets[j][i]))
             target_weights[i].append(float(weights[j][i]))
@@ -438,13 +444,27 @@ def get_dropout_list(low, high, num):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--inhibitors', default=False)
-    parser.add_argument('--similarity', default=True)
+    parser.add_argument('--inhibitors', default="False")
+    parser.add_argument('--similarity', default="True")
     parser.add_argument('--output_folder', default='./')
     args = parser.parse_args()
 
-    sim = "_sim" if args.similarity else ""
-    inh = "_inh" if args.inhibitors else ""
+    if (args.similarity == "True" or args.similarity == "true"):
+        sim = "_sim"
+    elif (args.similarity == "False" or args.similarity == "false"):
+        sim = ""
+    else:
+        print("Argument Error: --similarity must be given a valid boolean identifier.")
+        exit(1)
+
+    if (args.inhibitors == "True" or args.inhibitors == "true"):
+        inh = "_inh"
+    elif (args.inhibitors == "False" or args.inhibitors == "false"):
+        inh = ""
+    else:
+        print("Argument Error: --inhibitors must be given a valid boolean identifier.")
+        exit(1)
+    
     output_folder = args.output_folder
 
     # get data
@@ -481,8 +501,8 @@ if __name__ == '__main__':
 
     data_t, Pl1_t, Pl2_t, Pl3_t, Pl4_t, Pg_t, Pl1_weights_t, Pl2_weights_t, Pl3_weights_t, Pl4_weights_t, Pg_weights_t = get_training_data_only(data, Pl1, Pl2, Pl3, Pl4, Pg, Pl1_weights, Pl2_weights, Pl3_weights, Pl4_weights, Pg_weights)
 
-    num_to_search = 12
-    num_folds = 3
+    num_to_search = 2
+    num_folds = 2
     partitions = partition_data_cv(data_t, Pl1_t, Pl2_t, Pl3_t, Pl4_t, Pg_t, Pl1_weights_t, Pl2_weights_t, Pl3_weights_t, Pl4_weights_t, Pg_weights_t, num_folds)
 
     dropout_list = []
@@ -502,11 +522,11 @@ if __name__ == '__main__':
             train_loader = torch.utils.data.DataLoader(training_set, batch_size=12, shuffle=True)
             test_loader = torch.utils.data.DataLoader(testing_set, batch_size=1)
 
-            model = Net(1007, 0, 0, 0, 0, dropout=dropout, h_size=h_size)
+            model = Net(EC, 0, 0, 0, 0, dropout=dropout, h_size=h_size)
             device = torch.device("cpu")
             optimizer = torch.optim.Adam(model.parameters(), lr=0.0002)
 
-            num_epochs = 100
+            num_epochs = 2
             for epoch in range(num_epochs):
                 train_loader = torch.utils.data.DataLoader(training_set, batch_size=12, shuffle=True)
                 loss_trace = train(model, device, train_loader, optimizer, epoch)
@@ -526,7 +546,7 @@ if __name__ == '__main__':
 
     print("Training final model on entire dataset...")
 
-    model = Net(1007, 0, 0, 0, 0, dropout=best_dropout, h_size=best_layer)
+    model = Net(EC, 0, 0, 0, 0, dropout=best_dropout, h_size=best_layer)
     device = torch.device("cpu")
     optimizer = torch.optim.Adam(model.parameters(), lr=0.0002)
 
@@ -537,7 +557,7 @@ if __name__ == '__main__':
     R_precs_list = []
     results_list = []
     targets_list = []
-    num_epochs = 150
+    num_epochs = 3
     for epoch in range(num_epochs):
         train_loader_all = torch.utils.data.DataLoader(training_set_all, batch_size=12, shuffle=True)
         loss_trace = train(model, device, train_loader_all, optimizer, epoch)
@@ -552,7 +572,7 @@ if __name__ == '__main__':
         results_list.append(results)
         targets_list.append(target_results)
 
-    torch.save(model, "MultiLabelNN%s_epoch_%d.pt" % (sim, inh, epoch))
+    torch.save(model, os.path.join(output_folder, "MultiLabelNN%s%s_epoch_%d.pt" % (sim, inh, epoch)))
 
     # plot ap and auroc
     aurocs = []
