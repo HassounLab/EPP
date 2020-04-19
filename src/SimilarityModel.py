@@ -2,9 +2,10 @@
     The user must give a valid dictionary that maps molecules in whatever representation 
     they want to rdkit Fingerprint objects.
     The kind of fingerprint must match between training data and testing data. Our training
-    data uses maccs fingerprints.
+    data uses maccs fingerprints, represented with their bitstrings.
 '''
 
+import numpy as np
 from rdkit import DataStructs
 from rdkit.Chem import MACCSkeys
 
@@ -25,7 +26,24 @@ class SimilarityModel(object):
         If EC is None, test() expects test_data_filepath to point to a dictionary where keys are EC Numbers
         and values are lists of molecules.
         Otherwise, if enzyme is an EC Number, test() expects test_data_filepath to point to a list of molecules.
-        Some molecules might not be pr
+        
+        Inputs:
+
+            test_data_filepath; string
+                > .pkl file containing test data.
+
+            EC; string (default None)
+                > If None, test_data_filepath is expected to be a dict where keys are enzymes
+                  and values are lists/arrays of molecules. If string and valid EC Number, 
+                  test_data_filepath is expected to be a list of molecules to be tested
+                  against EC.
+
+        Outputs:
+
+            results; dict
+                > keys are enzymes and the values are dicts with keys: "Mean" (list of mean 
+                similarity scores), "Max" (list of max similarity scores), "Molecules" (list 
+                of molecules to which each score pertains).
         '''
         test_data = pickle_load(test_data_filepath)
         if EC is None: # dict case
