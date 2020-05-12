@@ -1,5 +1,8 @@
-
+import numpy as np
+import argparse
 from utils import pickle_load, pickle_dump, array_to_bit_string
+
+TEST_RATIO = 0.20
 
 def process_from_hmcnf_to_tree_classifier(data, labels, sim_weights, bal_weights, bal_sim_weights, enzyme_index_dict):
     pos_dict = {}
@@ -33,32 +36,45 @@ def process_from_hmcnf_to_tree_classifier(data, labels, sim_weights, bal_weights
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--inhibitors', default=False)
+    parser.add_argument('--inhibitors', default="False")
     args = parser.parse_args()
 
-    inh = "_inh" if args.inhibitors else ""
+    if args.inhibitors.lower() == "true":
+        inh = "_inh"
+    elif args.inhibitors.lower() == "false":
+        inh = ""
+    else:
+        print("Argument Error: --inhibitors must be given a valid boolean identifier.")
+        exit(1)
+
+    data = pickle_load("../data/HMCNF_data/data.pkl")
+    Pl1 = pickle_load("../data/HMCNF_data/Pl1.pkl")
+    Pl2 = pickle_load("../data/HMCNF_data/Pl2.pkl")
+    Pl3 = pickle_load("../data/HMCNF_data/Pl3.pkl")
+    Pl4 = pickle_load("../data/HMCNF_data/Pl4.pkl")
 
     Pl1_sim_weights = pickle_load("../data/HMCNF_data/Pl1_sim_weights%s.pkl" % (inh))
     Pl2_sim_weights = pickle_load("../data/HMCNF_data/Pl2_sim_weights%s.pkl" % (inh))
     Pl3_sim_weights = pickle_load("../data/HMCNF_data/Pl3_sim_weights%s.pkl" % (inh))
     Pl4_sim_weights = pickle_load("../data/HMCNF_data/Pl4_sim_weights%s.pkl" % (inh))
-    Pg_sim_weights = pickle_load("../data/HMCNF_data/Pg_sim_weights%s.pkl" % (inh))
 
     Pl1_sim_bal_weights = pickle_load("../data/HMCNF_data/Pl1_sim_bal_weights%s.pkl" % (inh))
     Pl2_sim_bal_weights = pickle_load("../data/HMCNF_data/Pl2_sim_bal_weights%s.pkl" % (inh))
     Pl3_sim_bal_weights = pickle_load("../data/HMCNF_data/Pl3_sim_bal_weights%s.pkl" % (inh))
     Pl4_sim_bal_weights = pickle_load("../data/HMCNF_data/Pl4_sim_bal_weights%s.pkl" % (inh))
-    Pg_sim_bal_weights = pickle_load("../data/HMCNF_data/Pg_sim_bal_weights%s.pkl" % (inh))
 
     Pl1_bal_weights = pickle_load("../data/HMCNF_data/Pl1_bal_weights.pkl")
     Pl2_bal_weights = pickle_load("../data/HMCNF_data/Pl2_bal_weights.pkl")
     Pl3_bal_weights = pickle_load("../data/HMCNF_data/Pl3_bal_weights.pkl")
     Pl4_bal_weights = pickle_load("../data/HMCNF_data/Pl4_bal_weights.pkl")
-    Pg_bal_weights = pickle_load("../data/HMCNF_data/Pg_bal_weights.pkl")
 
-    indexes = pickle_load("../utils/indexes_for_splitting")
+    indexes = pickle_load("../utils/indexes_for_splitting.pkl")
+    ec_index_dict = pickle_load("../utils/ec_index_dict.pkl")
+    class_index_dict = pickle_load("../utils/class_index_dict.pkl")
+    subclass_index_dict = pickle_load("../utils/subclass_index_dict.pkl")
+    subsubclass_index_dict = pickle_load("../utils/subsubclass_index_dict.pkl")
 
-    cutoff = int(8295*0.20)
+    cutoff = int(data.shape[0]*TEST_RATIO)
 
     train_i = indexes[cutoff:]
     test_i = indexes[:cutoff]
@@ -83,10 +99,10 @@ if __name__ == "__main__":
 
     pos_dict = {**EC_pos_dict, **class_pos_dict, **subclass_pos_dict, **subsubclass_pos_dict}
     unl_dict = {**EC_unl_dict, **class_unl_dict, **subclass_unl_dict, **subsubclass_unl_dict}
-    pickle_dump(pos_dict, "../data/pos_dict_train%s.pkl" % inh)
-    pickle_dump(unl_dict, "../data/unl_dict_train%s.pkl" % inh)
+    pickle_dump(pos_dict, "../data/tree_data/pos_dict_train%s.pkl" % inh)
+    pickle_dump(unl_dict, "../data/tree_data/unl_dict_train%s.pkl" % inh)
 
     pos_dict = {**EC_pos_dict_test, **class_pos_dict_test, **subclass_pos_dict_test, **subsubclass_pos_dict_test}
     unl_dict = {**EC_unl_dict_test, **class_unl_dict_test, **subclass_unl_dict_test, **subsubclass_unl_dict_test}
-    pickle_dump(pos_dict, "../data/pos_dict_test%s.pkl" % inh)
-    pickle_dump(unl_dict, "../data/unl_dict_test%s.pkl" % inh)
+    pickle_dump(pos_dict, "../data/tree_data/pos_dict_test%s.pkl" % inh)
+    pickle_dump(unl_dict, "../data/tree_data/unl_dict_test%s.pkl" % inh)

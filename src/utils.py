@@ -35,10 +35,29 @@ def write_data(self, data, filepath):
     for enzyme in data:
         handle.write(enzyme)
         handle.write('\t')
-        handle.write(self.concatenate(data[enzyme], '$'))
+        handle.write(concatenate(data[enzyme], '$'))
         handle.write('\n')
 
     handle.close()
+
+def concatenate(self, alist, divisor):
+    '''
+    Util for write_data
+    '''
+    string = ""
+    count = 0
+    for elem in alist:
+        if count != 0:
+            string += divisor
+        string += elem
+        count += 1
+    return string
+
+def array_to_bit_string(array):
+    string = ""
+    for f in array:
+        string += str(int(f))
+    return string
 
 def bit_strings_to_arrays(bit_strings):
     bit_arrays = []

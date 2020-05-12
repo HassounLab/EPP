@@ -6,7 +6,7 @@ from GridSearchCV import GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor
 
-from utils import pickle_load, pickle_dump, get_data
+from utils import pickle_load, pickle_dump, get_data, bit_strings_to_arrays, remove_duplicates
 
 class TreeAndFlatModels(object):
     '''
@@ -18,12 +18,14 @@ class TreeAndFlatModels(object):
                    train_filepath,
                    test_filepath,
                    rep="maccs",
+                   similarity=True,
                    min_positive_examples=10):
         self.train_filepath = train_filepath
         self.test_filepath = test_filepath
         self.data_ready = pickle_load(train_filepath)
         self.test_data = pickle_load(test_filepath)
         print("Done loading data")
+        self.similarity = similarity
         self.rep = rep
         self.min_positive_examples = min_positive_examples
         self.num_folds = num_folds
@@ -35,11 +37,16 @@ class TreeAndFlatModels(object):
             self.model_tree[ec] = {}
             query_enzyme = ec
             if query_enzyme in self.data_ready and query_enzyme in self.test_data:
-                x_NF, y_N, num_pos, sample_weights_bal, sample_weights_sim, inh_test = self.data_ready[query_enzyme]
-                x_NF_te, y_N_te, num_pos_te, sample_weights_bal_te, sample_weights_sim_te, inh_test_te = self.test_data[query_enzyme]
+                x_NF, y_N, num_pos, sample_weights_bal, sample_weights_sim = self.data_ready[query_enzyme]
+                x_NF_te, y_N_te, num_pos_te, sample_weights_bal_te, sample_weights_sim_te = self.test_data[query_enzyme]
             else:
                 self.model_tree[ec]["Tree"] = None
                 continue
+
+            if self.similarity:
+                weights = np.copy(sample_weights_sim)
+            else:
+                weights = np.copy(sample_weights_bal)
             
             self.model_tree[ec]["# Positive Examples"] = num_pos
             self.model_tree[ec]["X Test"] = x_NF_te
@@ -60,11 +67,16 @@ class TreeAndFlatModels(object):
                 self.model_tree[ec][x] = {}
                 query_enzyme = ec+'.'+x
                 if query_enzyme in self.data_ready and query_enzyme in self.test_data:
-                    x_NF, y_N, num_pos, sample_weights_bal, sample_weights_sim, inh_test = self.data_ready[query_enzyme]
-                    x_NF_te, y_N_te, num_pos_te, sample_weights_bal_te, sample_weights_sim_te, inh_test_te = self.test_data[query_enzyme]
+                    x_NF, y_N, num_pos, sample_weights_bal, sample_weights_sim = self.data_ready[query_enzyme]
+                    x_NF_te, y_N_te, num_pos_te, sample_weights_bal_te, sample_weights_sim_te = self.test_data[query_enzyme]
                 else:
                     self.model_tree[ec][x]["Tree"] = None
                     continue
+
+                if self.similarity:
+                    weights = np.copy(sample_weights_sim)
+                else:
+                    weights = np.copy(sample_weights_bal)
 
                 self.model_tree[ec][x]["# Positive Examples"] = num_pos
                 
@@ -87,11 +99,17 @@ class TreeAndFlatModels(object):
                     self.model_tree[ec][x][y] = {}
                     query_enzyme = ec+'.'+x+'.'+y
                     if query_enzyme in self.data_ready and query_enzyme in self.test_data:
-                        x_NF, y_N, num_pos, sample_weights_bal, sample_weights_sim, inh_test = self.data_ready[query_enzyme]
-                        x_NF_te, y_N_te, num_pos_te, sample_weights_bal_te, sample_weights_sim_te, inh_test_te = self.test_data[query_enzyme]
-                    else:
+                        x_NF, y_N, num_pos, sample_weights_bal, sample_weights_sim = self.data_ready[query_enzyme]
+                        x_NF_te, y_N_te, num_pos_te, sample_weights_bal_te, sample_weights_sim_te = self.test_data[query_enzyme]
+                    else:iunhgfds
                         self.model_tree[ec][x][y]["Tree"] = None
                         continue
+
+                    if self.similarity:
+                        weights = np.copy(sample_weights_sim)
+                    else:
+                        weights = np.copy(sample_weights_bal)
+
                     self.model_tree[ec][x][y]["# Positive Examples"] = num_pos
                     
                     self.model_tree[ec][x][y]["X Test"] = x_NF_te
@@ -114,11 +132,16 @@ class TreeAndFlatModels(object):
                         self.model_tree[ec][x][y][z] = {}
                         query_enzyme = ec+'.'+x+'.'+y+'.'+z
                         if query_enzyme in self.data_ready and query_enzyme in self.test_data:
-                            x_NF, y_N, num_pos, sample_weights_bal, sample_weights_sim, inh_test = self.data_ready[query_enzyme]
-                            x_NF_te, y_N_te, num_pos_te, sample_weights_bal_te, sample_weights_sim_te, inh_test_te = self.test_data[query_enzyme]
+                            x_NF, y_N, num_pos, sample_weights_bal, sample_weights_sim = self.data_ready[query_enzyme]
+                            x_NF_te, y_N_te, num_pos_te, sample_weights_bal_te, sample_weights_sim_te = self.test_data[query_enzyme]
                         else:
                             self.model_tree[ec][x][y][z]["Tree"] = None
                             continue
+
+                        if self.similarity:
+                            weights = np.copy(sample_weights_sim)
+                        else:
+                            weights = np.copy(sample_weights_bal)
 
                         self.model_tree[ec][x][y][z]["# Positive Examples"] = num_pos
                         
@@ -185,12 +208,12 @@ class TreeAndFlatModels(object):
                 return None
             currpos = currpos[ec_breakdown[depth]]
             
-            if est == "Tree" or est == "Tree No Weight":
+            if est == "Tree":
                 if depth == 0:
                     prediction += currpos[est].predict_proba(molecules)[:,1]
                 else:
                     prediction += currpos[est].predict(molecules)
-            elif est == "Flat" or est == "Flat No Weight":
+            elif est == "Flat":
                 prediction = currpos[est].predict(molecules)
             depth += 1
 
@@ -231,30 +254,3 @@ class TreeAndFlatModels(object):
                     self.enzymes_tree[ec][x][y] = {}
                 if z not in self.enzymes_tree[ec][x][y]:
                     self.enzymes_tree[ec][x][y][z] = None
-    
-    # Utilities        
-    def concatenate(self, alist, divisor):
-        '''
-        Util for write_data
-        '''
-        string = ""
-        count = 0
-        for elem in alist:
-            if count != 0:
-                string += divisor
-            string += elem
-            count += 1
-        return string
-    
-    def bit_strings_to_arrays(self, bit_strings):
-        bit_arrays = []
-        for bit_string in bit_strings:
-            bit_arrays.append(np.array([int(i) for i in bit_string]))
-        return np.array(bit_arrays)
-    
-    def remove_duplicates(self, alist):
-        newlist = []
-        for elem in alist:
-            if elem not in newlist:
-                newlist.append(elem)
-        return newlist

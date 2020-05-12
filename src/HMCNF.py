@@ -479,17 +479,17 @@ if __name__ == '__main__':
     parser.add_argument('--output_folder', default='./')
     args = parser.parse_args()
 
-    if (args.similarity == "True" or args.similarity == "true"):
+    if args.similarity.lower() == "true":
         sim = "_sim"
-    elif (args.similarity == "False" or args.similarity == "false"):
+    elif args.similarity.lower() == "false":
         sim = ""
     else:
         print("Argument Error: --similarity must be given a valid boolean identifier.")
         exit(1)
 
-    if (args.inhibitors == "True" or args.inhibitors == "true"):
+    if args.inhibitors.lower() == "true":
         inh = "_inh"
-    elif (args.inhibitors == "False" or args.inhibitors == "false"):
+    elif args.inhibitors.lower() == "false":
         inh = ""
     else:
         print("Argument Error: --inhibitors must be given a valid boolean identifier.")

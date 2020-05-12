@@ -1,6 +1,5 @@
 import numpy as np
-import pickle
-import sys
+import argparse
 
 from utils import pickle_load, pickle_dump, get_data, remove_duplicates, bit_strings_to_arrays
 
@@ -15,17 +14,12 @@ class dataset(object):
         for enzyme in self.pos_bitstrings:
             if len(self.pos_bitstrings[enzyme]["molecules"]) > 0:
                 print("Doing enzyme: {}".format(enzyme))
-                x_NF, y_N, num_pos, sample_weights_bal, sample_weights_sim, inh_test = self.prepare_data_single(enzyme)
+                x_NF, y_N, num_pos, sample_weights_bal, sample_weights_sim= self.prepare_data_single(enzyme)
             else:
                 print("Doing enzyme: {} --> failed".format(enzyme))
                 continue
 
-            if inh_test is None:
-                has_inh = False
-            else:
-                has_inh = True
-
-            self.data_ready[enzyme] = [x_NF, y_N, num_pos, sample_weights_bal, sample_weights_sim, inh_test]
+            self.data_ready[enzyme] = [x_NF, y_N, num_pos, sample_weights_bal, sample_weights_sim]
         
         if filepath is not None:
             pickle_dump(self.data_ready, filepath)
@@ -72,24 +66,31 @@ class dataset(object):
         sample_weights_bal = all_data[:,-2]
         sample_weights_sim_bal = all_data[:,-1]
 
-        return x_NF, y_N, int(pos_data.shape[0]), sample_weights_bal, sample_weights_sim_bal, inh_test
+        return x_NF, y_N, int(pos_data.shape[0]), sample_weights_bal, sample_weights_sim_bal
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--inhibitors', default=False)
+    parser.add_argument('--inhibitors', default="False")
     parser.add_argument('--ratio', default="all")
     args = parser.parse_args()
 
-    inh = "_inh" if args.inhibitors else ""
+    if args.inhibitors.lower() == "true":
+        inh = "_inh"
+    elif args.inhibitors.lower() == "false":
+        inh = ""
+    else:
+        print("Argument Error: --inhibitors must be given a valid boolean identifier.")
+        exit(1)
+
     r = args.ratio
 
-    print("Doing training")
-    dset = dataset("../data/pos_dict_train%s.pkl" % (inh), "../data/unl_dict_train%s_r%s.pkl" % (inh, r))
+    print("########################### Training Data #############################")
+    dset = dataset("../data/tree_data/pos_dict_train%s.pkl" % (inh), "../data/unl_dict_train%s_r%s.pkl" % (inh, r))
     data_filepath = "../data/tree_data/tree_and_flat_data%s_train_r%s.pkl" % (inh, r)
     dset.prepare_data(filepath=data_filepath)
 
-    print("Doing testing")
-    dset_test = dataset("../data/pos_dict_test%s.pkl" % (inh), "../data/unl_dict_test%s_r%s.pkl" % (inh, r))
-    data_filepath_test = "../data/tree_data/tree_and_flat_data%s_test_r%s.pkl" % (inh, r)
+    print("############################# Test Data ###############################")
+    dset_test = dataset("../data/tree_data/pos_dict_test%s.pkl" % (inh), "../data/tree_data/unl_dict_test%s.pkl" % (inh))
+    data_filepath_test = "../data/tree_data/tree_and_flat_data%s_test.pkl" % (inh)
     dset_test.prepare_data(filepath=data_filepath_test)
     print("Done")
