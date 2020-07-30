@@ -85,7 +85,7 @@ if __name__ == "__main__":
     r = args.ratio
 
     print("########################### Training Data #############################")
-    dset = dataset("../data/tree_data/pos_dict_train%s.pkl" % (inh), "../data/unl_dict_train%s_r%s.pkl" % (inh, r))
+    dset = dataset("../data/tree_data/pos_dict_train%s.pkl" % (inh), "../data/tree_data/unl_dict_train%s_r%s.pkl" % (inh, r))
     data_filepath = "../data/tree_data/tree_and_flat_data%s_train_r%s.pkl" % (inh, r)
     dset.prepare_data(filepath=data_filepath)
 

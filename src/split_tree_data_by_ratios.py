@@ -57,11 +57,12 @@ if __name__ == '__main__':
         print("Argument Error: --inhibitors must be given a valid boolean identifier.")
         exit(1)
 
-    r_list = args.r_list.strip('[').strip(']').split(',') # convert from string to list of strings
+    r_list = args.r_list.strip(' ').strip('[').strip(']').split(',') # convert from string to list of strings
 
     pos_dict_train = pickle_load("../data/tree_data/pos_dict_train%s.pkl" % (inh))
     unl_dict_train = pickle_load("../data/tree_data/unl_dict_train%s.pkl" % (inh))
 
     for r in r_list:
+        r = r.strip(' ')
         r_unl_dict_train = get_unl_for_ratio(pos_dict_train, unl_dict_train, r)
         pickle_dump(r_unl_dict_train, "../data/tree_data/unl_dict_train%s_r%s.pkl" % (inh, r))

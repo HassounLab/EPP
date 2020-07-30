@@ -295,11 +295,11 @@ class Net(nn.Module):
         self.batch_norm4 = nn.BatchNorm1d(h_size)
         self.globalOut = nn.Linear(h_size, self.C)
 
-    def forward(self, x):
-        Ag1 = F.dropout(self.batch_norm1(F.relu(self.global1(x))), p=self.dropout)
-        Ag2 = F.dropout(self.batch_norm2(F.relu(self.global2(torch.cat([Ag1, x], dim=1)))), p=self.dropout)
-        Ag3 = F.dropout(self.batch_norm3(F.relu(self.global3(torch.cat([Ag2, x], dim=1)))), p=self.dropout)
-        Ag4 = F.dropout(self.batch_norm4(F.relu(self.global4(torch.cat([Ag3, x], dim=1)))), p=self.dropout)
+    def forward(self, x, training=True):
+        Ag1 = F.dropout(self.batch_norm1(F.relu(self.global1(x))), p=self.dropout, training=training)
+        Ag2 = F.dropout(self.batch_norm2(F.relu(self.global2(torch.cat([Ag1, x], dim=1)))), p=self.dropout, training=training)
+        Ag3 = F.dropout(self.batch_norm3(F.relu(self.global3(torch.cat([Ag2, x], dim=1)))), p=self.dropout, training=training)
+        Ag4 = F.dropout(self.batch_norm4(F.relu(self.global4(torch.cat([Ag3, x], dim=1)))), p=self.dropout, training=training)
         Pg = torch.sigmoid(self.globalOut(Ag4))
         
         return Pg
@@ -314,7 +314,7 @@ def train(model, device, train_loader, optimizer, epoch):
     for batch_idx, (data, target, weights) in enumerate(train_loader):
         # data, target = data.to(device), [target[0].to(device), target[1].to(device), target[2].to(device), target[3].to(device), target[4].to(device)]    # fix this for all targets when using cuda
         optimizer.zero_grad()
-        Pl4 = model(data.float())
+        Pl4 = model(data.float(), training=True)
         loss = custom_loss(Pl4, target, weights)
         loss.backward()
         optimizer.step()
@@ -334,7 +334,7 @@ def test(model, device, test_loader, beta):
     with torch.no_grad():
         for data, target, weight in test_loader:
             # data, target = data.to(device), [target[0].to(device), target[1].to(device), target[2].to(device), target[3].to(device), target[4].to(device)]
-            Pl4 = model(data.float())
+            Pl4 = model(data.float(), training=False)
             loss = custom_loss(Pl4, target, weight)
             loss_trace.append(loss.item())
             predictions.append(Pl4[0])
@@ -609,9 +609,3 @@ if __name__ == '__main__':
     plt.grid()
     plt.legend()
     plt.savefig(os.path.join(output_folder, "MultiLabelNN_metrics_by_epoch%s%s_best_drop%.2f_layer%d.pdf" % (sim, inh, best_dropout, best_layer)))
-
-    pickle_dump(rocs_list, os.path.join(output_folder, "MultiLabelNN_rocs_list%s%s_best_drop%.2f._layer%dpkl" % (sim, inh, best_dropout, best_layer)))
-    pickle_dump(PRs_list, os.path.join(output_folder, "MultiLabelNN_PRs_list%s%s_best_drop%.2f_layer%d.pkl" % (sim, inh, best_dropout, best_layer)))
-    pickle_dump(R_precs_list, os.path.join(output_folder, "MultiLabelNN_R_precs_list%s%s_best_drop%.2f_layer%d.pkl" % (sim, inh, best_dropout, best_layer)))
-    pickle_dump(results_list, os.path.join(output_folder, "MultiLabelNN_results_list%s%s_best_drop%.2f_layer%d.pkl" % (sim, inh, best_dropout, best_layer)))
-    pickle_dump(targets_list, os.path.join(output_folder, "MultiLabelNN_targets_list%s%s_best_drop%.2f_layer%d.pkl" % (sim, inh, best_dropout, best_layer)))

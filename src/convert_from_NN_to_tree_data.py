@@ -8,6 +8,8 @@ def process_from_hmcnf_to_tree_classifier(data, labels, sim_weights, bal_weights
     pos_dict = {}
     unl_dict = {}
     for enzyme_i in range(labels.shape[1]):
+        if enzyme_i % 50 == 0:
+            print(enzyme_i)
         pos_dict[enzyme_index_dict[enzyme_i]] = {}
         pos_dict[enzyme_index_dict[enzyme_i]]["molecules"] = []
         pos_dict[enzyme_index_dict[enzyme_i]]["sim_weights"] = []
@@ -78,6 +80,8 @@ if __name__ == "__main__":
 
     train_i = indexes[cutoff:]
     test_i = indexes[:cutoff]
+    
+    print("done loading data")
 
     EC_pos_dict, EC_unl_dict = process_from_hmcnf_to_tree_classifier(data[train_i], Pl4[train_i], Pl4_sim_weights[train_i], Pl4_bal_weights[train_i], Pl4_sim_bal_weights[train_i], ec_index_dict)
     print("train ec done")
