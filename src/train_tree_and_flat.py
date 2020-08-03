@@ -37,7 +37,7 @@ if __name__ == "__main__":
     test_filepath = "../data/tree_data/tree_and_flat_data%s_test.pkl" % (inh)
 
     print("Creating Tree...")
-    model = TreeAndFlatModels(train_filepath = train_filepath, test_filepath = test_filepath, similarity= True, min_positive_examples = MIN_POSITIVE_EXAMPLE)
+    model = TreeAndFlatModels(train_filepath = train_filepath, test_filepath = test_filepath, similarity = (args.similarity.lower() == "true"), min_positive_examples = MIN_POSITIVE_EXAMPLE)
     model.create_ec_numbers_tree()
     model.create_tree()
     print("Dumping Tree...")
