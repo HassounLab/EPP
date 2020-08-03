@@ -126,7 +126,7 @@ if __name__ == "__main__":
     parser.add_argument('--ratio', default="all")
     parser.add_argument('--test_set', default="Full")
     parser.add_argument('--estimator', default="Tree")
-    parser.add_argument('--output_file', default="results")
+    parser.add_argument('--output_template', default="results")
     args = parser.parse_args()
 
     if args.similarity.lower() == "true":
@@ -147,7 +147,7 @@ if __name__ == "__main__":
 
     r = args.ratio
     est = args.estimator
-    output_file = args.output_file + sim + inh + '_r' + r + '.pkl'
+    output_file = args.output_template + sim + inh + '_r' + r + '.pkl'
 
     if args.test_set == "Full":
         test_dict = pickle_load("tree_and_flat_data_test.pkl")
