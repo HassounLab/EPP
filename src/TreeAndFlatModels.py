@@ -6,7 +6,7 @@ from GridSearchCV import GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor
 
-from utils import pickle_load, pickle_dump, get_data, bit_strings_to_arrays, remove_duplicates
+from utils import pickle_load, pickle_dump, bit_strings_to_arrays, remove_duplicates
 
 class TreeAndFlatModels(object):
     '''
@@ -235,17 +235,17 @@ class TreeAndFlatModels(object):
         Builds enzymes tree that is used for creating the model
         '''
         
+        ec_index_dict = pickle_load('../utils/ec_index_dict.pkl')
+        
         self.enzymes_tree = {}
-        for ec_num in [1, 2, 3, 4, 5, 6]:
-            ec_enzymes = list(get_data(("utils/EC%d_"+self.rep+".txt") % (ec_num)))
-            
-            for enzyme in ec_enzymes:
+        for enzyme in ec_index_dict:
+            if type(enzyme) == str: # only pick up EC Numbers, not the integer indices
                 ec_breakdown = enzyme.split('.')
                 ec = ec_breakdown[0]
                 x = ec_breakdown[1]
                 y = ec_breakdown[2]
                 z = ec_breakdown[3]
-                
+
                 if ec not in self.enzymes_tree:
                     self.enzymes_tree[ec] = {}
                 if x not in self.enzymes_tree[ec]:
