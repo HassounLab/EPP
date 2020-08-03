@@ -1,4 +1,4 @@
-# Enzyme Promiscuity Prediction using hierarchical classification
+# Enzyme Promiscuity Prediction using hierarchy-informed multi-label classification
 
 
 -------------------------------------------------------------------------
