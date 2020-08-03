@@ -126,6 +126,7 @@ if __name__ == "__main__":
     parser.add_argument('--ratio', default="all")
     parser.add_argument('--test_set', default="Full")
     parser.add_argument('--estimator', default="Tree")
+    parser.add_argument('--model_folder', default="./")
     parser.add_argument('--output_template', default="results")
     args = parser.parse_args()
 
@@ -150,13 +151,14 @@ if __name__ == "__main__":
     output_file = args.output_template + sim + inh + '_r' + r + '.pkl'
 
     if args.test_set == "Full":
-        test_dict = pickle_load("tree_and_flat_data_test.pkl")
+        test_dict = pickle_load("../data/tree_data/tree_and_flat_data%s_test.pkl" % (inh))
     elif args.test_set == "Inhibitor":
-        test_dict = pickle_load(".pkl")
+        print("Error: TODO add inhibitor test set extraction to this repo.")
     else:
         print("Error: Invalid test set name. Valid names are 'Full' and 'Inhibitor'")
+        exit(1)
 
-    model = pickle_load("../model/tree_classifier%s%s_r%s.pkl" % (sim, inh, r))
+    model = pickle_load(os.path.join(args.model_folder, "tree_classifier%s%s_r%s.pkl" % (sim, inh, r)))
 
     results = test(model, test_dict, est)
 
