@@ -14,11 +14,14 @@ import os
 from utils import pickle_load, pickle_dump, get_data, polyfit
 
 TEST_RATIO = 0.20
-EC = 1007
+EC = 983
 CLASS = 6
 SUBCLASS = 50
-SUBSUBCLASS = 148
+SUBSUBCLASS = 146
 ALL_LEVELS = EC + CLASS + SUBCLASS + SUBSUBCLASS
+
+# Number of dimensions in data
+X_SIZE = 167
 
 ########## DATA PREPARATION #################
 
@@ -269,9 +272,6 @@ class Dataset(torch.utils.data.Dataset):
 
 ########## MODEL CLASS AND FUNCTIONS ###############
 
-# Number of dimensions in data
-X_SIZE = 167
-
 class Net(nn.Module):
 
     def __init__(self, C, Cl1, Cl2, Cl3, Cl4, dropout, h_size):
@@ -501,8 +501,8 @@ if __name__ == '__main__':
 
     data_t, Pl1_t, Pl2_t, Pl3_t, Pl4_t, Pg_t, Pl1_weights_t, Pl2_weights_t, Pl3_weights_t, Pl4_weights_t, Pg_weights_t = get_training_data_only(data, Pl1, Pl2, Pl3, Pl4, Pg, Pl1_weights, Pl2_weights, Pl3_weights, Pl4_weights, Pg_weights)
 
-    num_to_search = 2
-    num_folds = 2
+    num_to_search = 12
+    num_folds = 3
     partitions = partition_data_cv(data_t, Pl1_t, Pl2_t, Pl3_t, Pl4_t, Pg_t, Pl1_weights_t, Pl2_weights_t, Pl3_weights_t, Pl4_weights_t, Pg_weights_t, num_folds)
 
     dropout_list = []
