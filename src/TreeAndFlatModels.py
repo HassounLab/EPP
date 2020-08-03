@@ -54,11 +54,11 @@ class TreeAndFlatModels(object):
             self.model_tree[ec]["W bal Test"] = sample_weights_bal_te
             self.model_tree[ec]["W sim Test"] = sample_weights_sim_te
             
-            first_model_data = self.select_model("RFClas", x_NF, y_N, sample_weights=sample_weights_sim, proba=True)
+            first_model_data = self.select_model("RFClas", x_NF, y_N, sample_weights=weights, proba=True)
             first_est = first_model_data["best_estimator"]
             self.model_tree[ec]["Tree"] = first_est
             
-            first_model_data = self.select_model("RFClas", x_NF, y_N, sample_weights=sample_weights_sim, proba=True)
+            first_model_data = self.select_model("RFClas", x_NF, y_N, sample_weights=weights, proba=True)
             first_est = first_model_data["best_estimator"]
             self.model_tree[ec]["Flat"] = first_est
             
@@ -86,11 +86,11 @@ class TreeAndFlatModels(object):
                 self.model_tree[ec][x]["W sim Test"] = sample_weights_sim_te
                 
                 yhat_train_first = self.model_tree[ec]["Tree"].predict_proba(x_NF)[:,1]
-                second_model_data = self.select_model("RFRegr", x_NF, y_N, y_prev=yhat_train_first, sample_weights=sample_weights_sim)
+                second_model_data = self.select_model("RFRegr", x_NF, y_N, y_prev=yhat_train_first, sample_weights=weights)
                 second_est = second_model_data["best_estimator"]
                 self.model_tree[ec][x]["Tree"] = second_est
                 
-                second_model_data = self.select_model("RFClas", x_NF, y_N, sample_weights=sample_weights_sim, proba=True)
+                second_model_data = self.select_model("RFClas", x_NF, y_N, sample_weights=weights, proba=True)
                 second_est = second_model_data["best_estimator"]
                 self.model_tree[ec][x]["Flat"] = second_est
 
@@ -119,11 +119,11 @@ class TreeAndFlatModels(object):
                 
                     yhat_train_first = self.model_tree[ec]["Tree"].predict_proba(x_NF)[:,1]
                     yhat_train_second = self.model_tree[ec][x]["Tree"].predict(x_NF) + yhat_train_first
-                    third_model_data = self.select_model("RFRegr", x_NF, y_N, y_prev=yhat_train_second, sample_weights=sample_weights_sim)
+                    third_model_data = self.select_model("RFRegr", x_NF, y_N, y_prev=yhat_train_second, sample_weights=weights)
                     third_est = third_model_data["best_estimator"]
                     self.model_tree[ec][x][y]["Tree"] = third_est
 
-                    third_model_data = self.select_model("RFClas", x_NF, y_N, sample_weights=sample_weights_sim, proba=True)
+                    third_model_data = self.select_model("RFClas", x_NF, y_N, sample_weights=weights, proba=True)
                     third_est = third_model_data["best_estimator"]
                     self.model_tree[ec][x][y]["Flat"] = third_est
                     
@@ -153,11 +153,11 @@ class TreeAndFlatModels(object):
                         yhat_train_first = self.model_tree[ec]["Tree"].predict_proba(x_NF)[:,1]
                         yhat_train_second = self.model_tree[ec][x]["Tree"].predict(x_NF) + yhat_train_first
                         yhat_train_third = self.model_tree[ec][x][y]["Tree"].predict(x_NF) + yhat_train_second
-                        fourth_model_data = self.select_model("RFRegr", x_NF, y_N, y_prev=yhat_train_third, sample_weights=sample_weights_sim)
+                        fourth_model_data = self.select_model("RFRegr", x_NF, y_N, y_prev=yhat_train_third, sample_weights=weights)
                         fourth_est = fourth_model_data["best_estimator"]
                         self.model_tree[ec][x][y][z]["Tree"] = fourth_est
 
-                        fourth_model_data = self.select_model("RFClas", x_NF, y_N, sample_weights=sample_weights_sim, proba=True)
+                        fourth_model_data = self.select_model("RFClas", x_NF, y_N, sample_weights=weights, proba=True)
                         fourth_est = fourth_model_data["best_estimator"]
                         self.model_tree[ec][x][y][z]["Flat"] = fourth_est
 
