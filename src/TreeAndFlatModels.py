@@ -28,7 +28,6 @@ class TreeAndFlatModels(object):
         self.similarity = similarity
         self.rep = rep
         self.min_positive_examples = min_positive_examples
-        self.num_folds = num_folds
         self.model_tree = {}
 
     def create_tree(self):        
@@ -101,7 +100,7 @@ class TreeAndFlatModels(object):
                     if query_enzyme in self.data_ready and query_enzyme in self.test_data:
                         x_NF, y_N, num_pos, sample_weights_bal, sample_weights_sim = self.data_ready[query_enzyme]
                         x_NF_te, y_N_te, num_pos_te, sample_weights_bal_te, sample_weights_sim_te = self.test_data[query_enzyme]
-                    else:iunhgfds
+                    else:
                         self.model_tree[ec][x][y]["Tree"] = None
                         continue
 
@@ -164,7 +163,7 @@ class TreeAndFlatModels(object):
     
     def select_model(self, estimator, x_NF, y_N, y_prev=0, sample_weights=None, proba=False):
         estimator_names = ["LR", "Ridge", "Lasso", "RFClas", "RFRegr", "SVM"]
-        elif estimator == "RFClas":
+        if estimator == "RFClas":
             est = sklearn.ensemble.RandomForestClassifier()
             param_grid = {'min_samples_leaf': [1, 5, 10, 20, 50, 100, 200], 'n_estimators': [50], 'max_features': ["sqrt"]}
             proba = True
@@ -235,7 +234,8 @@ class TreeAndFlatModels(object):
         Builds enzymes tree that is used for creating the model
         '''
         
-        ec_index_dict = pickle_load('../utils/ec_index_dict.pkl')
+        # ec_index_dict = pickle_load('../utils/ec_index_dict.pkl')
+        ec_index_dict = ['1.1.1.1', '1.1.3.10', '2.5.1.47']
         
         self.enzymes_tree = {}
         for enzyme in ec_index_dict:

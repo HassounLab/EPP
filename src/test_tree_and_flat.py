@@ -1,5 +1,8 @@
 import numpy as np
+import sklearn
+import sklearn.metrics
 import argparse
+import os
 
 from utils import pickle_load, pickle_dump
 from TreeAndFlatModels import TreeAndFlatModels
@@ -92,28 +95,26 @@ def test(model, test_dict, est):
             currpos = currpos[ec_breakdown[depth]]
             depth += 1
 
-        try:
-            x_test, y_test, a, b, c, d = test_dict[enzyme]
+        try: # Full test set
+            x_test, y_test, _, _, _= test_dict[enzyme]
         except:
-            x_test = test_dict[enzyme]["data"]
-            y_test = test_dict[enzyme]["target"]
+            x_test = np.array(test_dict[enzyme]["data"])
+            y_test = np.array(test_dict[enzyme]["target"])
         
         results[enzyme] = {}
         results[enzyme]["num_pos_train"] = currpos["# Positive Examples"]
         results[enzyme]["num_pos_test"] = y_test[y_test == 1.0].shape[0]
 
-        x_test = np.array(test_dict[enzyme]["data"])
-        y_true = np.array(test_dict[enzyme]["target"])
-        y_hat = model.predict_proba_for_testing(x_test, enzyme, est)
+        y_hat = model.predict_proba(x_test, enzyme, est)
 
-        results[enzyme]['AP'] = sklearn.metrics.average_precision_score(y_true, y_hat)
-        results[enzyme]['AUROC'] = sklearn.metrics.roc_auc_score(y_true, y_hat)
+        results[enzyme]['AP'] = sklearn.metrics.average_precision_score(y_test, y_hat)
+        results[enzyme]['AUROC'] = sklearn.metrics.roc_auc_score(y_test, y_hat)
 
-        R = y_true[y_true == 1.0].shape[0]
+        R = y_test[y_test == 1.0].shape[0]
         sorted_indices = np.argsort(y_hat)
 
-        sorted_y_true = y_true[sorted_indices]
-        top_R = sorted_y_true[-R:]
+        sorted_y_test = y_test[sorted_indices]
+        top_R = sorted_y_test[-R:]
         results[enzyme]['R-PREC'] = float(top_R[top_R == 1.0].shape[0])/float(R)
         
     return results
@@ -123,7 +124,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--inhibitors', default="False")
     parser.add_argument('--similarity', default="True")
-    parser.add_argument('--ratio', default="all")
+    # parser.add_argument('--ratio', default="all")
     parser.add_argument('--test_set', default="Full")
     parser.add_argument('--estimator', default="Tree")
     parser.add_argument('--model_folder', default="./")
@@ -146,9 +147,9 @@ if __name__ == "__main__":
         print("Argument Error: --inhibitors must be given a valid boolean identifier.")
         exit(1)
 
-    r = args.ratio
+    # r = args.ratio
     est = args.estimator
-    output_file = args.output_template + sim + inh + '_r' + r + '.pkl'
+    output_file = args.output_template + sim + inh + '.pkl' # + '_r' + r
 
     if args.test_set == "Full":
         test_dict = pickle_load("../data/tree_data/tree_and_flat_data%s_test.pkl" % (inh))
@@ -158,7 +159,7 @@ if __name__ == "__main__":
         print("Error: Invalid test set name. Valid names are 'Full' and 'Inhibitor'")
         exit(1)
 
-    model = pickle_load(os.path.join(args.model_folder, "tree_classifier%s%s_r%s.pkl" % (sim, inh, r)))
+    model = pickle_load(os.path.join(args.model_folder, "tree_and_flat_classifiers%s%s.pkl" % (sim, inh)))
 
     results = test(model, test_dict, est)
 

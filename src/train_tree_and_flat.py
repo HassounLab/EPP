@@ -41,4 +41,4 @@ if __name__ == "__main__":
     model.create_ec_numbers_tree()
     model.create_tree()
     print("Dumping Tree...")
-    pickle_dump(model, os.path.join(output_folder, "../models/tree_classifier%s%s.pkl" % (sim, inh)))
+    pickle_dump(model, os.path.join(output_folder, "tree_and_flat_classifiers%s%s.pkl" % (sim, inh)))
