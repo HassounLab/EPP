@@ -71,7 +71,7 @@ class dataset(object):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--inhibitors', default="False")
-    parser.add_argument('--ratio', default="all")
+#     parser.add_argument('--ratio', default="all")
     args = parser.parse_args()
 
     if args.inhibitors.lower() == "true":
@@ -82,11 +82,11 @@ if __name__ == "__main__":
         print("Argument Error: --inhibitors must be given a valid boolean identifier.")
         exit(1)
 
-    r = args.ratio
+#     r = args.ratio
 
     print("########################### Training Data #############################")
-    dset = dataset("../data/tree_data/pos_dict_train%s.pkl" % (inh), "../data/tree_data/unl_dict_train%s_r%s.pkl" % (inh, r))
-    data_filepath = "../data/tree_data/tree_and_flat_data%s_train_r%s.pkl" % (inh, r)
+    dset = dataset("../data/tree_data/pos_dict_train%s.pkl" % (inh), "../data/tree_data/unl_dict_train%s.pkl" % (inh))
+    data_filepath = "../data/tree_data/tree_and_flat_data%s_train.pkl" % (inh)
     dset.prepare_data(filepath=data_filepath)
 
     print("############################# Test Data ###############################")
