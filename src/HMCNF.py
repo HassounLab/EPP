@@ -21,7 +21,7 @@ SUBSUBCLASS = 146
 ALL_LEVELS = EC + CLASS + SUBCLASS + SUBSUBCLASS
 
 # Number of dimensions in data
-X_SIZE = 167
+X_SIZE = 2048
 
 ########## DATA PREPARATION #################
 
@@ -499,7 +499,7 @@ if __name__ == '__main__':
 
     # get data
     print("Getting data...")
-    data = pickle_load("../data/HMCNF_data/data.pkl")
+    data = pickle_load("../data/HMCNF_data/data_morgan2binary.pkl")
     Pl1  = pickle_load("../data/HMCNF_data/Pl1.pkl")
     Pl2  = pickle_load("../data/HMCNF_data/Pl2.pkl")
     Pl3  = pickle_load("../data/HMCNF_data/Pl3.pkl")
@@ -556,7 +556,7 @@ if __name__ == '__main__':
             device = torch.device("cpu")
             optimizer = torch.optim.Adam(model.parameters(), lr=0.0002)
 
-            num_epochs = 1
+            num_epochs = 70
             for epoch in range(num_epochs):
                 train_loader = torch.utils.data.DataLoader(training_set, batch_size=12, shuffle=True)
                 loss_trace = train(model, device, train_loader, optimizer, epoch)
@@ -587,7 +587,7 @@ if __name__ == '__main__':
     R_precs_list = []
     results_list = []
     targets_list = []
-    num_epochs = 3
+    num_epochs = 70
     for epoch in range(num_epochs):
         train_loader_all = torch.utils.data.DataLoader(training_set_all, batch_size=12, shuffle=True)
         loss_trace = train(model, device, train_loader_all, optimizer, epoch)
