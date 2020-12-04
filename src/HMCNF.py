@@ -21,7 +21,7 @@ SUBSUBCLASS = 146
 ALL_LEVELS = EC + CLASS + SUBCLASS + SUBSUBCLASS
 
 # Number of dimensions in data
-X_SIZE = 2048
+X_SIZE = 167
 
 ########## DATA PREPARATION #################
 
@@ -320,7 +320,6 @@ class Net(nn.Module):
         Pl2 = torch.sigmoid(self.localOut2(Al2))
     
         Ag3 = F.dropout(self.batch_norm3(F.relu(self.global3(torch.cat([Ag2, x], dim=1)))), p=self.dropout, training=training)
-        
         Al3 = F.dropout(self.batch_normL3(F.relu(self.local3(Ag3))), p=self.dropout, training=training)
         Pl3 = torch.sigmoid(self.localOut3(Al3))
         
@@ -499,7 +498,7 @@ if __name__ == '__main__':
 
     # get data
     print("Getting data...")
-    data = pickle_load("../data/HMCNF_data/data_morgan2binary.pkl")
+    data = pickle_load("../data/HMCNF_data/data.pkl")
     Pl1  = pickle_load("../data/HMCNF_data/Pl1.pkl")
     Pl2  = pickle_load("../data/HMCNF_data/Pl2.pkl")
     Pl3  = pickle_load("../data/HMCNF_data/Pl3.pkl")
@@ -556,7 +555,7 @@ if __name__ == '__main__':
             device = torch.device("cpu")
             optimizer = torch.optim.Adam(model.parameters(), lr=0.0002)
 
-            num_epochs = 70
+            num_epochs = 1
             for epoch in range(num_epochs):
                 train_loader = torch.utils.data.DataLoader(training_set, batch_size=12, shuffle=True)
                 loss_trace = train(model, device, train_loader, optimizer, epoch)
@@ -587,7 +586,7 @@ if __name__ == '__main__':
     R_precs_list = []
     results_list = []
     targets_list = []
-    num_epochs = 70
+    num_epochs = 3
     for epoch in range(num_epochs):
         train_loader_all = torch.utils.data.DataLoader(training_set_all, batch_size=12, shuffle=True)
         loss_trace = train(model, device, train_loader_all, optimizer, epoch)
