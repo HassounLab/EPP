@@ -14,6 +14,7 @@ class GridSearchCV(object):
         self.param_grid = param_grid
         self.proba = proba
         
+    # works fine with toy data!
     def prepare_folds(self, x_NF, y_N, y_prev, y_binary_orig, sample_weight):
         x_pos_NF = x_NF[y_binary_orig == 1.0]
         y_pos_N = y_N[y_binary_orig == 1.0]
@@ -51,6 +52,7 @@ class GridSearchCV(object):
        
         return x_tr_NF_list, y_tr_N_list, w_tr_N_list, x_va_NF_list, y_va_N_list, y_va_prev_list, y_va_orig_list, w_va_N_list
         
+    # works on toy data!
     def prepare_singleclass_folds(self, x_NF, y_N, y_prev, y_binary_orig, sample_weight):
         N = y_N.size
         n_rows_per_fold = int(np.ceil(N / float(self.num_folds))) * np.ones(self.num_folds, dtype=np.int32)
@@ -99,6 +101,16 @@ class GridSearchCV(object):
         return x_tr_NF_list, y_tr_N_list, w_tr_N_list, x_va_NF_list, y_va_N_list, y_va_prev_list, y_va_orig_list, w_va_N_list
     
     def fit(self, x_NF, y_N, y_prev, y_binary_orig, sample_weight=None):
+        print("y_N", end="    ")
+        print(y_N)
+        print("%.3f" % (y_N[y_N < 0.0].shape[0] / y_N.shape[0]))
+        print("y_prev", end=" ")
+        print(y_prev)
+        print("y_orig", end=" ")
+        print(y_binary_orig)
+        print()
+        print()
+        
         if sample_weight is None:
             sample_weight = np.ones(y_N.size)
         
@@ -113,30 +125,27 @@ class GridSearchCV(object):
             for fold in range(self.num_folds):
                 self.estimator.set_params(**params)
                 self.estimator.fit(x_tr_NF_list[fold], y_tr_N_list[fold], sample_weight=w_tr_N_list[fold])
-                s = self.average_precision_hierarchy(self.estimator, x_va_NF_list[fold], y_prev_list[fold], y_va_orig_list[fold], w_va_N_list[fold])
+                s = self.average_precision_hierarchy(self.estimator, x_va_NF_list[fold], y_prev_list[fold], y_va_orig_list[fold])
                 param_scores.append(s)
             scores.append(np.mean(param_scores))
         
         best_params = param_combinations[np.argmax(np.array(scores))]
         
         self.estimator.set_params(**best_params)
-        self.estimator.fit(x_NF, y_N)
+        self.estimator.fit(x_NF, y_N, sample_weight=sample_weight)
         
         self.best_estimator_ = self.estimator
         self.best_params_ = best_params
         self.best_score_ = np.max(np.array(scores))
         
-    def average_precision_hierarchy(self, estimator, x, y_prev, y_binary_orig, sample_weight):
+    def average_precision_hierarchy(self, estimator, x, y_prev, y_binary_orig):
         if self.proba:
             y_hat = estimator.predict_proba(x)[:,1]
         else:
             y_hat = estimator.predict(x)
         y_hat += y_prev
-
-        # y_hat[y_hat >= 0.5] = 1.0
-        # y_hat[y_hat < 0.5] = 0.0
         
-        score = sklearn.metrics.average_precision_score(y_binary_orig, y_hat, sample_weight=sample_weight)
+        score = sklearn.metrics.average_precision_score(y_binary_orig, y_hat)
         
         return score
         

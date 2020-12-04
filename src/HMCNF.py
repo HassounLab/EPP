@@ -320,7 +320,6 @@ class Net(nn.Module):
         Pl2 = torch.sigmoid(self.localOut2(Al2))
     
         Ag3 = F.dropout(self.batch_norm3(F.relu(self.global3(torch.cat([Ag2, x], dim=1)))), p=self.dropout, training=training)
-        
         Al3 = F.dropout(self.batch_normL3(F.relu(self.local3(Ag3))), p=self.dropout, training=training)
         Pl3 = torch.sigmoid(self.localOut3(Al3))
         

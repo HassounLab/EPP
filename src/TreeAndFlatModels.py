@@ -57,9 +57,9 @@ class TreeAndFlatModels(object):
             first_est = first_model_data["best_estimator"]
             self.model_tree[ec]["Tree"] = first_est
             
-            first_model_data = self.select_model("RFClas", x_NF, y_N, sample_weights=weights, proba=True)
-            first_est = first_model_data["best_estimator"]
-            self.model_tree[ec]["Flat"] = first_est
+#             first_model_data = self.select_model("RFClas", x_NF, y_N, sample_weights=weights, proba=True)
+#             first_est = first_model_data["best_estimator"]
+#             self.model_tree[ec]["Flat"] = first_est
             
             for x in self.enzymes_tree[ec]:
                 print("\tDoing EC %s.%s" % (ec, x))
@@ -89,9 +89,9 @@ class TreeAndFlatModels(object):
                 second_est = second_model_data["best_estimator"]
                 self.model_tree[ec][x]["Tree"] = second_est
                 
-                second_model_data = self.select_model("RFClas", x_NF, y_N, sample_weights=weights, proba=True)
-                second_est = second_model_data["best_estimator"]
-                self.model_tree[ec][x]["Flat"] = second_est
+#                 second_model_data = self.select_model("RFClas", x_NF, y_N, sample_weights=weights, proba=True)
+#                 second_est = second_model_data["best_estimator"]
+#                 self.model_tree[ec][x]["Flat"] = second_est
 
                 for y in self.enzymes_tree[ec][x]:
                     print("\t\tDoing EC %s.%s.%s" % (ec, x, y))
@@ -122,9 +122,9 @@ class TreeAndFlatModels(object):
                     third_est = third_model_data["best_estimator"]
                     self.model_tree[ec][x][y]["Tree"] = third_est
 
-                    third_model_data = self.select_model("RFClas", x_NF, y_N, sample_weights=weights, proba=True)
-                    third_est = third_model_data["best_estimator"]
-                    self.model_tree[ec][x][y]["Flat"] = third_est
+#                     third_model_data = self.select_model("RFClas", x_NF, y_N, sample_weights=weights, proba=True)
+#                     third_est = third_model_data["best_estimator"]
+#                     self.model_tree[ec][x][y]["Flat"] = third_est
                     
                     for z in self.enzymes_tree[ec][x][y]:
                         print("\t\t\tDoing EC %s.%s.%s.%s" % (ec, x, y, z))
@@ -162,6 +162,7 @@ class TreeAndFlatModels(object):
 
     
     def select_model(self, estimator, x_NF, y_N, y_prev=0, sample_weights=None, proba=False):
+        print(estimator)
         estimator_names = ["LR", "Ridge", "Lasso", "RFClas", "RFRegr", "SVM"]
         if estimator == "RFClas":
             est = sklearn.ensemble.RandomForestClassifier()
@@ -213,7 +214,8 @@ class TreeAndFlatModels(object):
                 else:
                     prediction += currpos[est].predict(molecules)
             elif est == "Flat":
-                prediction = currpos[est].predict(molecules)
+                if depth == 3: # only predict at the EC Number level
+                    prediction = currpos[est].predict_proba(molecules)[:,1]
             depth += 1
 
         try:
@@ -234,7 +236,7 @@ class TreeAndFlatModels(object):
         Builds enzymes tree that is used for creating the model
         '''
         
-        # ec_index_dict = pickle_load('../utils/ec_index_dict.pkl')
+#         ec_index_dict = pickle_load('../utils/ec_index_dict.pkl')
         ec_index_dict = ['1.1.1.1', '1.1.3.10', '2.5.1.47']
         
         self.enzymes_tree = {}
