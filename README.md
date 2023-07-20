@@ -73,3 +73,12 @@ Arguments:
   - *model_folder*: str; path to folder containing the model of interest
   - *output_template*: str; path + template (initial part of filename) where to store the results.
 
+## On Realistic data split
+
+We provide the indices for the "realistic" split of the data, as defined in our paper via UPGMA clustering of the molecules, and choosing the test molecules as the outliers. The files are the following:
+- Training + Validation: `data/HMCNF_data/train_i_UPGMAcluster800.pkl`. Slices the full dataset.
+- Training only: `data/HMCNF_data/train_for_val_i_UPGMAcluster800.pkl`. Slices the training + validation dataset (i.e. apply it after `train_i_UPGMAcluster800.pkl`).
+- Validation only: `data/HMCNF_data/validation_i_UPGMAcluster800.pkl`. Slices the training + validation dataset (i.e. apply it after `train_i_UPGMAcluster800.pkl`).
+- Test: `data/HMCNF_data/test_i_UPGMAcluster800.pkl`. Slices the full dataset.
+
+
