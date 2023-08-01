@@ -21,7 +21,7 @@ SUBSUBCLASS = 146
 ALL_LEVELS = EC + CLASS + SUBCLASS + SUBSUBCLASS
 
 # Number of dimensions in data
-X_SIZE = 167
+X_SIZE = 2048 # 167 for maccs
 
 ########## DATA PREPARATION #################
 
@@ -498,7 +498,7 @@ if __name__ == '__main__':
 
     # get data
     print("Getting data...")
-    data = pickle_load("../data/HMCNF_data/data.pkl")
+    data = pickle_load("../data/HMCNF_data/data_morgan2binary.pkl") # data_maccs.pkl
     Pl1  = pickle_load("../data/HMCNF_data/Pl1.pkl")
     Pl2  = pickle_load("../data/HMCNF_data/Pl2.pkl")
     Pl3  = pickle_load("../data/HMCNF_data/Pl3.pkl")
