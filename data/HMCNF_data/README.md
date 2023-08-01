@@ -4,8 +4,10 @@
 
 We provide the molecules both as smiles and as maccs fingerprints:
     - smiles.csv contains the smiles
-    - data.pkl contains the maccs fingerprints as a 2D numpy array, with the rows being parallel to the list of smiles,
+    - data_maccs.pkl contains the maccs fingerprints as a 2D numpy array, with the rows being parallel to the list of smiles,
       and the columns being the maccs features
+    - data_morgan2binary.pkl contains the maccs fingerprints as a 2D numpy array, with the rows being parallel to the list of smiles,
+      and the columns being the morgan2binary features
 
 
 ### Molecule-Enzyme interaction labels

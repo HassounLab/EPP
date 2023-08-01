@@ -479,7 +479,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.similarity.lower() == "true":
-        sim = "_sim"
+        sim = "_morgan2binary_sim" # "_maccs_sim"
     elif args.similarity.lower() == "false":
         sim = ""
     else:
