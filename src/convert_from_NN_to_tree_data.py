@@ -49,21 +49,21 @@ if __name__ == "__main__":
         print("Argument Error: --inhibitors must be given a valid boolean identifier.")
         exit(1)
 
-    data = pickle_load("../data/HMCNF_data/data.pkl")
+    data = pickle_load("../data/HMCNF_data/data_morgan2binary.pkl") # data_maccs.pkl
     Pl1 = pickle_load("../data/HMCNF_data/Pl1.pkl")
     Pl2 = pickle_load("../data/HMCNF_data/Pl2.pkl")
     Pl3 = pickle_load("../data/HMCNF_data/Pl3.pkl")
     Pl4 = pickle_load("../data/HMCNF_data/Pl4.pkl")
 
-    Pl1_sim_weights = pickle_load("../data/HMCNF_data/Pl1_sim_weights%s.pkl" % (inh))
-    Pl2_sim_weights = pickle_load("../data/HMCNF_data/Pl2_sim_weights%s.pkl" % (inh))
-    Pl3_sim_weights = pickle_load("../data/HMCNF_data/Pl3_sim_weights%s.pkl" % (inh))
-    Pl4_sim_weights = pickle_load("../data/HMCNF_data/Pl4_sim_weights%s.pkl" % (inh))
+    Pl1_sim_weights = pickle_load("../data/HMCNF_data/Pl1_morgan2binary_sim_weights%s.pkl" % (inh)) # _maccs_sim
+    Pl2_sim_weights = pickle_load("../data/HMCNF_data/Pl2_morgan2binary_sim_weights%s.pkl" % (inh)) # _maccs_sim
+    Pl3_sim_weights = pickle_load("../data/HMCNF_data/Pl3_morgan2binary_sim_weights%s.pkl" % (inh)) # _maccs_sim
+    Pl4_sim_weights = pickle_load("../data/HMCNF_data/Pl4_morgan2binary_sim_weights%s.pkl" % (inh)) # _maccs_sim
 
-    Pl1_sim_bal_weights = pickle_load("../data/HMCNF_data/Pl1_sim_bal_weights%s.pkl" % (inh))
-    Pl2_sim_bal_weights = pickle_load("../data/HMCNF_data/Pl2_sim_bal_weights%s.pkl" % (inh))
-    Pl3_sim_bal_weights = pickle_load("../data/HMCNF_data/Pl3_sim_bal_weights%s.pkl" % (inh))
-    Pl4_sim_bal_weights = pickle_load("../data/HMCNF_data/Pl4_sim_bal_weights%s.pkl" % (inh))
+    Pl1_sim_bal_weights = pickle_load("../data/HMCNF_data/Pl1_morgan2binary_sim_bal_weights%s.pkl" % (inh)) # _maccs_sim
+    Pl2_sim_bal_weights = pickle_load("../data/HMCNF_data/Pl2_morgan2binary_sim_bal_weights%s.pkl" % (inh)) # _maccs_sim
+    Pl3_sim_bal_weights = pickle_load("../data/HMCNF_data/Pl3_morgan2binary_sim_bal_weights%s.pkl" % (inh)) # _maccs_sim
+    Pl4_sim_bal_weights = pickle_load("../data/HMCNF_data/Pl4_morgan2binary_sim_bal_weights%s.pkl" % (inh)) # _maccs_sim
 
     Pl1_bal_weights = pickle_load("../data/HMCNF_data/Pl1_bal_weights.pkl")
     Pl2_bal_weights = pickle_load("../data/HMCNF_data/Pl2_bal_weights.pkl")
