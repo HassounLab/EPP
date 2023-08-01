@@ -73,12 +73,27 @@ Arguments:
   - *model_folder*: str; path to folder containing the model of interest
   - *output_template*: str; path + template (initial part of filename) where to store the results.
 
+
 ## On Realistic data split
+
+To train and evaluate the models under the realistic data split, the following two steps need to be taken:
+
+### Splitting the molecules
 
 We provide the indices for the "realistic" split of the data, as defined in our paper via UPGMA clustering of the molecules, and choosing the test molecules as the outliers. The files are the following:
 - Training + Validation: `data/HMCNF_data/train_i_UPGMAcluster800.pkl`. Slices the full dataset.
 - Training only: `data/HMCNF_data/train_for_val_i_UPGMAcluster800.pkl`. Slices the training + validation dataset (i.e. apply it after `train_i_UPGMAcluster800.pkl`).
 - Validation only: `data/HMCNF_data/validation_i_UPGMAcluster800.pkl`. Slices the training + validation dataset (i.e. apply it after `train_i_UPGMAcluster800.pkl`).
 - Test: `data/HMCNF_data/test_i_UPGMAcluster800.pkl`. Slices the full dataset.
+
+### Subsetting the labels (aka Reduced set)
+
+As described in the paper, the realistic split divides the molecules in such a way that several EC numbers do not have enough molecules associated with them for training and/or testing, so models could be trained only for 680 EC Numbers. Furthermore, when splitting the training data further into training and validation for the purposes of hyperparameter optimization, 680 is further reduced to 561.
+
+We provide a script to subset the Full dataset into Reduced and Reduced-for-validation datasets. The following commands will generate the appropriate data files:
+```bash
+cd data/HMCNF_data
+python make_realistic_split_data.py --similarity [True] --inhibitors [False]
+```
 
 
