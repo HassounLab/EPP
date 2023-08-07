@@ -97,3 +97,6 @@ python make_realistic_split_data.py --similarity [True] --inhibitors [False]
 ```
 
 
+## On Inhibitors
+
+To identify all the inhibitors in our dataset, we provide an `(N x E)` boolean matrix - where `N` is the total number of molecules and `E` is the total number of ECs - in `data/HMCNF_data/PL4_inh.pkl`. This matrix identifies the inhibitor molecules of each EC number, and can be easily used to subset the Full Test Set set to create the Inhibitor Test Set.
